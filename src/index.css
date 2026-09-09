@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   DESIGN TOKENS
+   Single source of truth. Change a value here and it propagates everywhere.
+   Tailwind v4 turns each of these into utilities (bg-ink, text-ochre, ...).
+   ========================================================================== */
+@theme {
+  /* --- Core palette --- */
+  --color-ink: #0a0a0b; /* page background */
+  --color-ink-raised: #101013; /* elevated surfaces */
+  --color-ochre: #e3b23c; /* primary accent + headings */
+  --color-ochre-deep: #8f6a1e; /* accent, pressed / muted states */
+  --color-bone: #f2f0eb; /* primary text */
+  --color-ash: #9b9ba1; /* secondary text */
+
+  /* --- Structural lines (derived from bone so one palette change is enough) --- */
+  --color-hairline: rgb(242 240 235 / 0.09);
+  --color-hairline-strong: rgb(242 240 235 / 0.18);
+
+  /* --- Typefaces --- */
+  --font-display: "Familjen Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* --- Editorial type scale --- */
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--line-height: 1.1;
+  --text-eyebrow--letter-spacing: 0.16em;
+
+  --text-display: clamp(2.75rem, 8vw, 5.75rem);
+  --text-display--line-height: 0.94;
+  --text-display--letter-spacing: -0.035em;
+
+  --text-title: clamp(2rem, 4.5vw, 3.25rem);
+  --text-title--line-height: 1.02;
+  --text-title--letter-spacing: -0.025em;
+
+  /* --- Layout --- */
+  --spacing-gutter: 1.5rem;
+  --spacing-section: clamp(4.5rem, 10vw, 9rem);
+
+  /* --- Motion (restrained on purpose) --- */
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+@layer base {
+  html {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem; /* clears the fixed navbar on anchor jumps */
+    -webkit-text-size-adjust: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ochre-deep) var(--color-ink);
+  }
+
+  body {
+    margin: 0;
+    min-width: 0;
+    background-color: var(--color-ink);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.65;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headings are ochre by default per the design direction.
+     Override on any element with a text-* utility (utilities win over base). */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    color: var(--color-ochre);
+    font-weight: 500;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  img,
+  svg,
+  video {
+    display: block;
+    max-width: 100%;
+  }
+
+  ::selection {
+    background-color: var(--color-ochre);
+    color: var(--color-ink);
+  }
+
+  /* Visible, consistent keyboard focus everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--color-ochre);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ochre-deep);
+    border: 3px solid var(--color-ink);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ochre);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ==========================================================================
+   REUSABLE PIECES
+   ========================================================================== */
+@layer components {
+  /* Film grain — procedural SVG noise, no image asset needed.
+     Applied as an overlay; opacity is set by the consumer (~3%). */
+  .film-grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 180px 180px;
+  }
+
+  /* Small uppercase mono label used for metadata and section numbering. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+  }
+
+  /* Inline text link: hairline rule that fills to ochre on hover. */
+  .link-quiet {
+    position: relative;
+    color: var(--color-bone);
+    transition: color 240ms var(--ease-editorial);
+  }
+  .link-quiet::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background-color: var(--color-hairline-strong);
+    transform: scaleX(1);
+    transform-origin: left;
+    transition:
+      background-color 240ms var(--ease-editorial),
+      transform 320ms var(--ease-editorial);
+  }
+  .link-quiet:hover {
+    color: var(--color-ochre);
+  }
+  .link-quiet:hover::after {
+    background-color: var(--color-ochre);
+  }
+
+  /* Full-bleed hairline divider. */
+  .rule {
+    height: 1px;
+    width: 100%;
+    background-color: var(--color-hairline);
+    border: 0;
+  }
+}
+
+/* Prevent any child element from creating horizontal page overflow */
+#root,
+#root * {
+  max-width: 100%;
+}
+
+@media (max-width: 1023px) {
+  body {
+    overflow-x: hidden !important;
+  }
+
+  #root {
+    overflow-x: hidden !important;
+  }
+}
+
