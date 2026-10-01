@@ -9,9 +9,12 @@ import {
 import ProjectForm from "../components/ProjectForm";
 
 function AdminProjects() {
+  // Form state
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
 
-  const projects = [
+  // Temporary project data
+  const [projects, setProjects] = useState([
     {
       id: 1,
       title: "DermaClust",
@@ -39,7 +42,59 @@ function AdminProjects() {
       github: "https://github.com/yourusername/cook-book",
       demo: "https://your-demo-link.com",
     },
-  ];
+  ]);
+
+  // Add Project
+  const handleAddProject = (newProject) => {
+    setProjects((currentProjects) => [
+      ...currentProjects,
+      {
+        ...newProject,
+        id: Date.now(),
+      },
+    ]);
+
+    setIsFormOpen(false);
+  };
+
+  // Open Edit Form
+  const handleEditProject = (project) => {
+    setEditingProject(project);
+    setIsFormOpen(true);
+  };
+
+  // Update Project
+  const handleUpdateProject = (updatedProject) => {
+    setProjects((currentProjects) =>
+      currentProjects.map((project) =>
+        project.id === updatedProject.id
+          ? updatedProject
+          : project
+      )
+    );
+
+    setEditingProject(null);
+    setIsFormOpen(false);
+  };
+
+  // Delete Project
+    const handleDeleteProject = (projectId) => {
+      const confirmed = window.confirm(
+        "Are you sure you want to delete this project?"
+      );
+
+      if (!confirmed) return;
+
+      setProjects((currentProjects) =>
+        currentProjects.filter((project) => project.id !== projectId)
+      );
+    };
+
+  // Close Form
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingProject(null);
+  };
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -59,8 +114,12 @@ function AdminProjects() {
           </p>
         </div>
 
+        {/* Add Project Button */}
         <button
-          onClick={() => setIsFormOpen(true)}
+          onClick={() => {
+            setEditingProject(null);
+            setIsFormOpen(true);
+          }}
           className="flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
         >
           <Plus size={18} />
@@ -100,14 +159,14 @@ function AdminProjects() {
 
             {/* Actions */}
             <div className="ml-6 flex items-center gap-2">
-              {/* GitHub */}
+              {/* Source Code */}
               {project.github && (
                 <a
                   href={project.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded-lg p-2 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
-                  title="View GitHub Repository"
+                  title="View Source Code"
                 >
                   <Code2 size={20} />
                 </a>
@@ -128,6 +187,7 @@ function AdminProjects() {
 
               {/* Edit */}
               <button
+                onClick={() => handleEditProject(project)}
                 className="rounded-lg p-2 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
                 title="Edit Project"
               >
@@ -136,6 +196,7 @@ function AdminProjects() {
 
               {/* Delete */}
               <button
+                onClick={() => handleDeleteProject(project.id)}
                 className="rounded-lg p-2 text-neutral-500 transition hover:bg-red-50 hover:text-red-600"
                 title="Delete Project"
               >
@@ -146,9 +207,14 @@ function AdminProjects() {
         ))}
       </div>
 
-      {/* Add Project Modal */}
+      {/* Project Form Modal */}
       {isFormOpen && (
-        <ProjectForm onClose={() => setIsFormOpen(false)} />
+        <ProjectForm
+          onClose={handleCloseForm}
+          onAddProject={handleAddProject}
+          editingProject={editingProject}
+          onUpdateProject={handleUpdateProject}
+        />
       )}
     </div>
   );

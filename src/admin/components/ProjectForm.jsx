@@ -1,20 +1,76 @@
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
-function ProjectForm({ onClose }) {
+function ProjectForm({ onClose, onAddProject, editingProject, onUpdateProject }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    technologies: "",
+    github: "",
+    demo: "",
+  });
+
+  // Fill form when editing an existing project
+  useEffect(() => {
+    if (editingProject) {
+      setFormData({
+        title: editingProject.title || "",
+        description: editingProject.description || "",
+        technologies: editingProject.technologies?.join(", ") || "",
+        github: editingProject.github || "",
+        demo: editingProject.demo || "",
+      });
+    }
+  }, [editingProject]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((currentData) => ({
+      ...currentData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const projectData = {
+      title: formData.title,
+      description: formData.description,
+      technologies: formData.technologies
+        .split(",")
+        .map((technology) => technology.trim())
+        .filter(Boolean),
+      github: formData.github,
+      demo: formData.demo,
+    };
+
+    if (editingProject) {
+      onUpdateProject({
+        ...editingProject,
+        ...projectData,
+      });
+    } else {
+      onAddProject(projectData);
+    }
+  };
+
   return (
-    /* Full-screen dark overlay */
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      {/* Center popup */}
-      <div className="relative w-[550px] max-w-[90vw] max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[85vh] w-[550px] max-w-[90vw] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900">
-              Add New Project
+              {editingProject ? "Edit Project" : "Add New Project"}
             </h2>
 
             <p className="mt-1 text-sm text-neutral-500">
-              Add a project to your portfolio.
+              {editingProject
+                ? "Update your project details."
+                : "Add a project to your portfolio."}
             </p>
           </div>
 
@@ -28,8 +84,9 @@ function ProjectForm({ onClose }) {
         </div>
 
         {/* Form */}
-        <form className="mt-6 space-y-5">
-          {/* Project Title */}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+
+          {/* Title */}
           <div>
             <label className="text-sm font-medium text-neutral-700">
               Project Title
@@ -37,8 +94,12 @@ function ProjectForm({ onClose }) {
 
             <input
               type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
               placeholder="e.g. DermaClust"
-              className="mt-2 w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none transition focus:border-neutral-900"
+              required
+              className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-neutral-900"
             />
           </div>
 
@@ -49,9 +110,13 @@ function ProjectForm({ onClose }) {
             </label>
 
             <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
               rows="4"
-              placeholder="Write a short description of your project..."
-              className="mt-2 w-full resize-none rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none transition focus:border-neutral-900"
+              placeholder="Write a short description..."
+              required
+              className="mt-2 w-full resize-none rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-neutral-900"
             />
           </div>
 
@@ -63,8 +128,12 @@ function ProjectForm({ onClose }) {
 
             <input
               type="text"
+              name="technologies"
+              value={formData.technologies}
+              onChange={handleChange}
               placeholder="React, Node.js, MongoDB"
-              className="mt-2 w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none transition focus:border-neutral-900"
+              required
+              className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-neutral-900"
             />
 
             <p className="mt-2 text-xs text-neutral-400">
@@ -72,7 +141,7 @@ function ProjectForm({ onClose }) {
             </p>
           </div>
 
-          {/* GitHub Link */}
+          {/* GitHub */}
           <div>
             <label className="text-sm font-medium text-neutral-700">
               GitHub Link
@@ -80,12 +149,15 @@ function ProjectForm({ onClose }) {
 
             <input
               type="url"
+              name="github"
+              value={formData.github}
+              onChange={handleChange}
               placeholder="https://github.com/..."
-              className="mt-2 w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none transition focus:border-neutral-900"
+              className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-neutral-900"
             />
           </div>
 
-          {/* Live Demo Link */}
+          {/* Live Demo */}
           <div>
             <label className="text-sm font-medium text-neutral-700">
               Live Demo Link
@@ -93,8 +165,11 @@ function ProjectForm({ onClose }) {
 
             <input
               type="url"
+              name="demo"
+              value={formData.demo}
+              onChange={handleChange}
               placeholder="https://..."
-              className="mt-2 w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm outline-none transition focus:border-neutral-900"
+              className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-neutral-900"
             />
           </div>
 
@@ -112,7 +187,7 @@ function ProjectForm({ onClose }) {
               type="submit"
               className="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
             >
-              Save Project
+              {editingProject ? "Save Changes" : "Save Project"}
             </button>
           </div>
         </form>
